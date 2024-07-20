@@ -3,6 +3,7 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import json
+import random
 
 # Load environment variables
 load_dotenv()
@@ -14,16 +15,13 @@ model = genai.GenerativeModel("gemini-pro")
 # Streamlit page configuration
 st.set_page_config(page_title="연애 심리 퀴즈", page_icon="🧠", layout="centered")
 
-
 # Custom function for colored header
 def colored_header(label, color="#FF4B4B"):
     st.markdown(f'<h2 style="color: {color};">{label}</h2>', unsafe_allow_html=True)
 
-
 # Title and introduction
 colored_header("🧠 남녀 심리 퀴즈")
-st.write("재미있는 퀴즈로 심리의 세계를 탐험해보세요!")
-
+st.write("재미있는 퀴즈로 연애 심리의 세계를 탐험해보세요!")
 
 # JSON Output Parser
 class JsonOutputParser:
@@ -31,24 +29,22 @@ class JsonOutputParser:
         text = text.replace("```", "").replace("json", "")
         return json.loads(text)
 
-
 output_parser = JsonOutputParser()
-
 
 # Generate questions function
 def generate_questions(topic):
     prompt = f"""
-    당신은 심리학 전문가입니다. {topic}에 대한 5개의 흥미로운 질문을 만들어주세요.
+    당신은 남여 연애 심리학 전문가입니다. {topic}와 연애에 대한 5개의 흥미로운 질문을 만들어주세요.
     각 질문은 4개의 답변을 가져야 하며, 그 중 1개만 맞아야 합니다.
     정답에는 (o)로 표시하세요.
+    답변의 순서는 무작위로 해주세요.
     예시:
     질문: 여성들이 스트레스를 받을 때 가장 흔히 보이는 행동은?
-    답변: 과식하기(o)|운동하기|잠자기|쇼핑하기
+    답변: 잠자기|과식하기(o)|운동하기|쇼핑하기
     이제 당신 차례입니다! {topic}에 대한 5개의 질문을 만들어주세요.
     """
     response = model.generate_content(prompt)
     return response.text
-
 
 # Format questions function
 def format_questions(questions):
@@ -74,8 +70,13 @@ def format_questions(questions):
     ```
     """
     response = model.generate_content(prompt)
-    return output_parser.parse(response.text)
-
+    parsed_response = output_parser.parse(response.text)
+    
+    # Shuffle answers for each question
+    for question in parsed_response["questions"]:
+        random.shuffle(question["answers"])
+    
+    return parsed_response
 
 # Main application logic
 def main():
@@ -126,7 +127,6 @@ def main():
             st.experimental_rerun()
     elif not st.session_state.quiz_started:
         st.info("퀴즈 주제를 선택하고 '퀴즈 시작하기' 버튼을 눌러주세요!")
-
 
 if __name__ == "__main__":
     main()

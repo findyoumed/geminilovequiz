@@ -13,7 +13,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-pro")
 
 # Streamlit page configuration
-st.set_page_config(page_title="연애 심리 퀴즈", page_icon="🧠", layout="centered")
+st.set_page_config(page_title="남녀 심리 퀴즈", page_icon="🧠", layout="centered")
 
 # Custom function for colored header
 def colored_header(label, color="#FF4B4B"):
